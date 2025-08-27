@@ -20,12 +20,14 @@ jobs:
             name: pp-2016-MU-Sim10b-${{ github.head_ref }}
             snakemake_dir: notebooks
             target: deploy validate_acceptance validate_efficiency validate_resolution validate_covariance
+            model_prefix: trk
             additional_config: |
+                storage_folder: trk-2016MagUp-Sim10b
                 training_data:
                     - training-data/2016MU-sim10b/LamarrTraining.root
             additional_profile: |
                 rerun-triggers: mtime
-            generated_model_path: /tmp/s3models/lamarr-train/models/compiled_model.c
+            generated_model_path: /tmp/compiled_model.c
         secrets:
             SECRETS_YAML: ${{ secrets.STORAGE_SECRETS }}
 

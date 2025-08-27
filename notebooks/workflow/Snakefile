@@ -73,14 +73,6 @@ rule preprocessing:
     shell:
         """
         INPUT_FILES='{input.data_files}' \
-        ACCEPTANCE_PREPROCESSING={output.acceptance_preprocessing} \
-        EFFICIENCY_PREPROCESSING={output.efficiency_preprocessing} \
-        ACCEPTANCE_TRAIN={output.acceptance_train} \
-        ACCEPTANCE_TEST={output.acceptance_test} \
-        ACCEPTANCE_VALIDATION={output.acceptance_validation} \
-        EFFICIENCY_TRAIN={output.efficiency_train} \
-        EFFICIENCY_TEST={output.efficiency_test} \
-        EFFICIENCY_VALIDATION={output.efficiency_validation} \
         jupyter nbconvert --to html --execute \
         --ExecutePreprocessor.timeout=-1 \
         --ExecutePreprocessor.kernel_name=python3 \
@@ -426,7 +418,6 @@ rule validate_covariance:
         """
 
 
-
 rule deploy:
     input:
         notebook="workflow/notebooks/Deploy.ipynb",
@@ -441,7 +432,7 @@ rule deploy:
 
         
     output:
-        generated_c_file=smkstore("compiled_model.c", 's3models'),
+        generated_c_file="/tmp/compiled_model.c",
         generated_library=smkstore("compiled_model.so", 's3models'),
         report=report(
             smkstore("deploy.html", 's3reports'),
@@ -476,16 +467,5 @@ rule deploy:
         {input.notebook} --output {log.report}
         """
 
-rule compress_dotC:
-    input:
-        generated_c_file=smkstore("compiled_model.c", 's3models'),
-
-    output:
-        compressed_c="/tmp/compiled_model.c.xz", 
-
-    shell: 
-        """
-        xz -9e -T0 -c -k {input.generated_c_file} > {output.compressed_c}
-        """
 
      
