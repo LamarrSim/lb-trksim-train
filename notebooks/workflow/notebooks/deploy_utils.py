@@ -95,7 +95,7 @@ class LamarrModel:
         algos.append(("dnn", self.collapsed_model))
         
         if self.tY is not None:
-            algos.append(("postprocessing", self.tX))
+            algos.append(("postprocessing", self.tY))
             
         return sklearn.pipeline.Pipeline(algos)
     
@@ -118,18 +118,32 @@ class LamarrModel:
     @staticmethod
     def collapse_model (model):
         collapsed_layers = []
-        layer_seq = model.layers + [None]
-        for layer, next_layer in zip(layer_seq[:-1], layer_seq[1:]):
-            if 'input' in layer.name.lower(): continue 
-            if 'concatenate' in layer.name.lower(): continue
-            if 'add' in layer.name.lower(): continue
+
+        banned_layers = ['input', 'concatenate', 'functional', 'add']
+        layer_seq = []
+        for layer_config in model.get_config()['layers']:
+            layer_name = layer_config['name']
+            layers = [nl for nl in model.layers if nl.name == layer_name]
+            layer = layers[0] if len(layers) else None
+            if any([bl in layer_name.lower() for bl in banned_layers]):
+                layer = None               
+            layer_seq.append((layer_name, layer))
+
+        layer_seq.append((None, None))
+        
+
+        
+        print (layer_seq)
+        for (name, layer), (next_name, next_layer) in zip(layer_seq[:-1], layer_seq[1:]):
+            if layer is None: continue
+            
             # identify a skip connection:
-            if (next_layer is not None and
-                'add' in next_layer.name.lower() and 
-                'dense' in layer.name.lower()
+            if (next_name is not None and
+                'add' in next_name.lower() and 
+                'dense' in name.lower()
                ):
                 collapsed_layers.append(hacks.DenseWithSkipConnection(layer))
-            elif 'dense' in layer.name.lower():
+            elif 'dense' in name.lower():
                 collapsed_layers.append(tf.keras.layers.Dense( 
                     layer.bias.shape[0],
                     input_shape=layer.input.shape[1:],

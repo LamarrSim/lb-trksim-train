@@ -64,7 +64,7 @@ def split_and_store(dataset, fracs_and_dirs: list, chunksize: int, **kwargs):
             split
             .repartition(partition_size=chunksize)
             .map_partitions(FeatherWriter(output_dir=path, **kwargs))
-            .compute()
+            .compute(num_workers=4)
             .sum()
         )
 
