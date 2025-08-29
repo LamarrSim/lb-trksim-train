@@ -3,10 +3,10 @@ secrets_file: "secrets.yaml"
 storage_folder: "tests"
 
 training_time_limit_seconds:
-    acceptance: 60
-    efficiency: 60
-    resolution: 60
-    covariance: 60
+    acceptance: 600
+    efficiency: 600
+    resolution: 3600
+    covariance: 3660
 
 training_data:
     - training-data/2016MU-sim10b/LamarrTraining.root
